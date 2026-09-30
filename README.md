@@ -170,6 +170,9 @@ dotnet build
 ```
 
 ### Run Tests
+
+From the `PgrStudentManagement.Tests` folder run:
+
 ```bash
 dotnet test
 ```
