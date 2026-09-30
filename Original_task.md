@@ -95,7 +95,7 @@ PgrStudentManagement/
 The Week 2 use cases (W2-UC01 to W2-UC05) have been implemented and tested.
 A detailed description of the design decisions, field mapping, view implementations, alternative flows, and testing strategy can be found in:
 
-- [WEEK02_IMPLEMENTATION_DOCUMENTATION.md](WEEK02_IMPLEMENTATION_DOCUMENTATION.md)
+- [readme.md](readme.md)
 
 ## Run Automated Tests
 
