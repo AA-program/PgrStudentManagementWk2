@@ -32,46 +32,25 @@ The Week 2 prototype uses an in-memory collection. Permanent persistence, authen
 | W2-UC04 | US004 | Update Expected Thesis Submission Date | College Administrator | Change the date by which a student is expected to submit their thesis | Student Not Found |
 | W2-UC05 | US004 | Record Actual Thesis Submission | College Administrator | Record the actual thesis submission date and update the student status to Submitted | Invalid Submission Date |
 
-```plantuml
-@startuml Week2_UseCase_Diagram
+```mermaid
+flowchart LR
+    Student[Student]
+    CollegeAdministrator[College Administrator]
 
-title Week 2 - Student Management Use-Case Diagram
+    subgraph SystemBoundary[Student Management System]
+        direction TB
+        W2UC01([W2-UC01<br/>View Enrolment Details])
+        W2UC02([W2-UC02<br/>View Thesis Details])
+        W2UC03([W2-UC03<br/>Update Student Status])
+        W2UC04([W2-UC04<br/>Update Expected Thesis Submission Date])
+        W2UC05([W2-UC05<br/>Record Actual Thesis Submission])
+    end
 
-left to right direction
-skinparam packageStyle rectangle
-skinparam shadowing false
-
-actor "Student" as Student
-actor "College Administrator" as CollegeAdministrator
-Finally got your results.   Good news.
-
-Professional Discussion: Merit
-Project Report: Merit
-Overall: Merit
-
-Well done!   I'll put the admin in train this side to get your certificates issued.
-
-Again congratulations and apologies for the delay.
-
-Kind regards
-
-Martin
-rectangle "Student Management System" as SystemBoundary {
-    usecase "W2-UC01\nView Enrolment Details" as W2UC01
-    usecase "W2-UC02\nView Thesis Details" as W2UC02
-    usecase "W2-UC03\nUpdate Student Status" as W2UC03
-    usecase "W2-UC04\nUpdate Expected Thesis\nSubmission Date" as W2UC04
-    usecase "W2-UC05\nRecord Actual Thesis\nSubmission" as W2UC05
-}
-
-Student --> W2UC01
-Student --> W2UC02
-
-CollegeAdministrator --> W2UC03
-CollegeAdministrator --> W2UC04
-CollegeAdministrator --> W2UC05
-
-@enduml
+    Student --> W2UC01
+    Student --> W2UC02
+    CollegeAdministrator --> W2UC03
+    CollegeAdministrator --> W2UC04
+    CollegeAdministrator --> W2UC05
 ```
 
 ## Sequence Diagram
