@@ -78,182 +78,164 @@ CollegeAdministrator --> W2UC05
 
 The sequence below shows the five implemented use cases. Student records are read and updated directly in the in-memory collection; successful updates redirect to the relevant details action.
 
-```plantuml
-@startuml Week2_StudentManagement_Sequence
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Student
+    actor Admin as College Administrator
+    participant Browser
+    participant Controller as ASP.NET Core MVC (StudentsController)
+    participant Students as In-memory student collection
+    participant Views as Razor Views
 
-title Week 2 - Student Management Sequence Diagram
-hide footbox
-autonumber
-skinparam shadowing false
+    Note over Browser,Controller: W2-UC01: View Enrolment Details
+    Student->>Browser: Request enrolment details(studentNumber)
+    Browser->>Controller: GET EnrolmentDetails(studentNumber)
+    Controller->>Students: Find matching student
+    Students-->>Controller: Student or null
+    alt Student found
+        Controller->>Views: Render EnrolmentDetails(student)
+        Views-->>Controller: HTML with enrolment fields and status
+    else Blank number or student not found
+        Controller->>Views: Render StudentNotFound
+        Views-->>Controller: HTML with not-found message
+    end
+    Controller-->>Browser: Return rendered page
+    Browser-->>Student: Display enrolment details or not-found message
 
-actor Student
-actor "College Administrator" as Admin
-participant Browser
-participant "ASP.NET Core MVC\n(StudentsController)" as Controller
-collections "In-memory\nList<Student>" as Students
-participant "Razor Views" as Views
+    Note over Browser,Controller: W2-UC02: View Thesis Details
+    Student->>Browser: Request thesis details(studentNumber)
+    Browser->>Controller: GET ThesisDetails(studentNumber)
+    Controller->>Students: Find matching student
+    Students-->>Controller: Student or null
+    alt Student found
+        Controller->>Views: Render ThesisDetails(student)
+        alt Thesis information available
+            Views-->>Controller: HTML with thesis and submission details
+        else No thesis information recorded
+            Views-->>Controller: HTML with information-not-available notice
+        end
+    else Blank number or student not found
+        Controller->>Views: Render StudentNotFound
+        Views-->>Controller: HTML with not-found message
+    end
+    Controller-->>Browser: Return rendered page
+    Browser-->>Student: Display thesis details or applicable message
 
-group W2-UC01: View Enrolment Details
-   Student -> Browser: Request enrolment details(studentNumber)
-   Browser -> Controller: GET EnrolmentDetails(studentNumber)
-   Controller -> Students: Find matching student
-   Students --> Controller: Student or null
-   alt Student found
-      Controller -> Views: Render EnrolmentDetails(student)
-      Views --> Controller: HTML with enrolment fields and status
-   else Blank number or student not found
-      Controller -> Views: Render StudentNotFound
-      Views --> Controller: HTML with not-found message
-   end
-   Controller --> Browser: Return rendered page
-   Browser --> Student: Display enrolment details or not-found message
-end
+    Note over Browser,Controller: W2-UC03: Update Student Status
+    Admin->>Browser: Open Edit Status(studentNumber)
+    Browser->>Controller: GET EditStatus(studentNumber)
+    Controller->>Students: Find matching student
+    Students-->>Controller: Student or null
+    alt Student found
+        Controller->>Views: Render EditStatus(student)
+        Views-->>Controller: Status form
+    else Blank number or student not found
+        Controller->>Views: Render StudentNotFound
+        Views-->>Controller: HTML with not-found message
+    end
+    Controller-->>Browser: Return form or not-found page
+    Admin->>Browser: Submit new status
+    Browser->>Controller: POST EditStatus(studentNumber, status)
+    Controller->>Students: Find matching student
+    Students-->>Controller: Student or null
+    alt Student not found
+        Controller->>Views: Render StudentNotFound
+        Views-->>Controller: HTML with not-found message
+        Controller-->>Browser: Return not-found page
+    else Student found, status is unsupported
+        Controller->>Views: Render EditStatus(student) with validation error
+        Views-->>Controller: Status form with error
+        Controller-->>Browser: Return validation form
+    else Student found, status is valid
+        Controller->>Students: Update Student.Status
+        Controller->>Controller: Set success message in TempData
+        Controller-->>Browser: Redirect to EnrolmentDetails(studentNumber)
+        Browser->>Controller: GET EnrolmentDetails(studentNumber)
+        Controller->>Students: Find updated student
+        Students-->>Controller: Updated student
+        Controller->>Views: Render EnrolmentDetails(updated student)
+        Views-->>Controller: HTML with updated status
+        Controller-->>Browser: Return rendered page
+    end
+    Browser-->>Admin: Display result
 
-group W2-UC02: View Thesis Details
-   Student -> Browser: Request thesis details(studentNumber)
-   Browser -> Controller: GET ThesisDetails(studentNumber)
-   Controller -> Students: Find matching student
-   Students --> Controller: Student or null
-   alt Student found
-      Controller -> Views: Render ThesisDetails(student)
-      alt Thesis information available
-         Views --> Controller: HTML with thesis and submission details
-      else No thesis information recorded
-         Views --> Controller: HTML with information-not-available notice
-      end
-   else Blank number or student not found
-      Controller -> Views: Render StudentNotFound
-      Views --> Controller: HTML with not-found message
-   end
-   Controller --> Browser: Return rendered page
-   Browser --> Student: Display thesis details or applicable message
-end
+    Note over Browser,Controller: W2-UC04: Update Expected Thesis Submission Date
+    Admin->>Browser: Open Edit Expected Date(studentNumber)
+    Browser->>Controller: GET EditExpectedSubmissionDate(studentNumber)
+    Controller->>Students: Find matching student
+    Students-->>Controller: Student or null
+    alt Student found
+        Controller->>Views: Render EditExpectedSubmissionDate(student)
+        Views-->>Controller: Expected-date form
+    else Blank number or student not found
+        Controller->>Views: Render StudentNotFound
+        Views-->>Controller: HTML with not-found message
+    end
+    Controller-->>Browser: Return form or not-found page
+    Admin->>Browser: Submit expected date
+    Browser->>Controller: POST EditExpectedSubmissionDate(studentNumber, date)
+    Controller->>Students: Find matching student
+    Students-->>Controller: Student or null
+    alt Student not found
+        Controller->>Views: Render StudentNotFound
+        Views-->>Controller: HTML with not-found message
+        Controller-->>Browser: Return not-found page
+    else Date missing or before enrolment start date
+        Controller->>Views: Render date form with validation error
+        Views-->>Controller: Date form with error
+        Controller-->>Browser: Return validation form
+    else Date is valid
+        Controller->>Students: Update ExpectedSubmissionDate
+        Controller-->>Browser: Redirect to ThesisDetails(studentNumber)
+        Browser->>Controller: GET ThesisDetails(studentNumber)
+        Controller->>Students: Find updated student
+        Students-->>Controller: Updated student
+        Controller->>Views: Render ThesisDetails(updated student)
+        Views-->>Controller: HTML with updated expected date
+        Controller-->>Browser: Return rendered page
+    end
+    Browser-->>Admin: Display result
 
-group W2-UC03: Update Student Status
-   Admin -> Browser: Open Edit Status(studentNumber)
-   Browser -> Controller: GET EditStatus(studentNumber)
-   Controller -> Students: Find matching student
-   Students --> Controller: Student or null
-   alt Student found
-      Controller -> Views: Render EditStatus(student)
-      Views --> Controller: Status form
-   else Blank number or student not found
-      Controller -> Views: Render StudentNotFound
-      Views --> Controller: HTML with not-found message
-   end
-   Controller --> Browser: Return form or not-found page
+    Note over Browser,Controller: W2-UC05: Record Actual Thesis Submission
+    Admin->>Browser: Open Record Submission(studentNumber)
+    Browser->>Controller: GET RecordSubmission(studentNumber)
+    Controller->>Students: Find matching student
+    Students-->>Controller: Student or null
+    alt Student found
+        Controller->>Views: Render RecordSubmission(student)
+        Views-->>Controller: Submission form
+    else Blank number or student not found
+        Controller->>Views: Render StudentNotFound
+        Views-->>Controller: HTML with not-found message
+    end
+    Controller-->>Browser: Return form or not-found page
+    Admin->>Browser: Submit actual submission date
+    Browser->>Controller: POST RecordSubmission(studentNumber, date)
+    Controller->>Students: Find matching student
+    Students-->>Controller: Student or null
+    alt Student not found
+        Controller->>Views: Render StudentNotFound
+        Views-->>Controller: HTML with not-found message
+        Controller-->>Browser: Return not-found page
+    else Date missing or before enrolment start date
+        Controller->>Views: Render submission form with validation error
+        Views-->>Controller: Submission form with error
+        Controller-->>Browser: Return validation form, no fields changed
+    else Date is valid
+        Controller->>Students: Set ActualSubmissionDate and Status=Submitted
+        Note right of Students: Both properties change together.
+        Controller-->>Browser: Redirect to ThesisDetails(studentNumber)
+        Browser->>Controller: GET ThesisDetails(studentNumber)
+        Controller->>Students: Find updated student
+        Students-->>Controller: Updated student
+        Controller->>Views: Render ThesisDetails(updated student)
+        Views-->>Controller: HTML with actual date and Submitted status
+        Controller-->>Browser: Return rendered page
+    end
+    Browser-->>Admin: Display result
 
-   Admin -> Browser: Submit new status
-   Browser -> Controller: POST EditStatus(studentNumber, status)
-   Controller -> Students: Find matching student
-   Students --> Controller: Student or null
-   alt Student not found
-      Controller -> Views: Render StudentNotFound
-      Views --> Controller: HTML with not-found message
-      Controller --> Browser: Return not-found page
-   else Student found, status is unsupported
-      Controller -> Views: Render EditStatus(student) with validation error
-      Views --> Controller: Status form with error
-      Controller --> Browser: Return validation form
-   else Student found, status is valid
-      Controller -> Students: Update Student.Status
-      Controller -> Controller: Set success message in TempData
-      Controller --> Browser: Redirect to EnrolmentDetails(studentNumber)
-      Browser -> Controller: GET EnrolmentDetails(studentNumber)
-      Controller -> Students: Find updated student
-      Students --> Controller: Updated student
-      Controller -> Views: Render EnrolmentDetails(updated student)
-      Views --> Controller: HTML with updated status
-      Controller --> Browser: Return rendered page
-   end
-   Browser --> Admin: Display result
-end
-
-group W2-UC04: Update Expected Thesis Submission Date
-   Admin -> Browser: Open Edit Expected Date(studentNumber)
-   Browser -> Controller: GET EditExpectedSubmissionDate(studentNumber)
-   Controller -> Students: Find matching student
-   Students --> Controller: Student or null
-   alt Student found
-      Controller -> Views: Render EditExpectedSubmissionDate(student)
-      Views --> Controller: Expected-date form
-   else Blank number or student not found
-      Controller -> Views: Render StudentNotFound
-      Views --> Controller: HTML with not-found message
-   end
-   Controller --> Browser: Return form or not-found page
-
-   Admin -> Browser: Submit expected date
-   Browser -> Controller: POST EditExpectedSubmissionDate(studentNumber, date)
-   Controller -> Students: Find matching student
-   Students --> Controller: Student or null
-   alt Student not found
-      Controller -> Views: Render StudentNotFound
-      Views --> Controller: HTML with not-found message
-      Controller --> Browser: Return not-found page
-   else Date missing or before enrolment start date
-      Controller -> Views: Render date form with validation error
-      Views --> Controller: Date form with error
-      Controller --> Browser: Return validation form
-   else Date is valid
-      Controller -> Students: Update ExpectedSubmissionDate
-      Controller --> Browser: Redirect to ThesisDetails(studentNumber)
-      Browser -> Controller: GET ThesisDetails(studentNumber)
-      Controller -> Students: Find updated student
-      Students --> Controller: Updated student
-      Controller -> Views: Render ThesisDetails(updated student)
-      Views --> Controller: HTML with updated expected date
-      Controller --> Browser: Return rendered page
-   end
-   Browser --> Admin: Display result
-end
-
-group W2-UC05: Record Actual Thesis Submission
-   Admin -> Browser: Open Record Submission(studentNumber)
-   Browser -> Controller: GET RecordSubmission(studentNumber)
-   Controller -> Students: Find matching student
-   Students --> Controller: Student or null
-   alt Student found
-      Controller -> Views: Render RecordSubmission(student)
-      Views --> Controller: Submission form
-   else Blank number or student not found
-      Controller -> Views: Render StudentNotFound
-      Views --> Controller: HTML with not-found message
-   end
-   Controller --> Browser: Return form or not-found page
-
-   Admin -> Browser: Submit actual submission date
-   Browser -> Controller: POST RecordSubmission(studentNumber, date)
-   Controller -> Students: Find matching student
-   Students --> Controller: Student or null
-   alt Student not found
-      Controller -> Views: Render StudentNotFound
-      Views --> Controller: HTML with not-found message
-      Controller --> Browser: Return not-found page
-   else Date missing or before enrolment start date
-      Controller -> Views: Render submission form with validation error
-      Views --> Controller: Submission form with error
-      Controller --> Browser: Return validation form, no fields changed
-   else Date is valid
-      Controller -> Students: Set ActualSubmissionDate and Status=Submitted
-      note right of Students: Both properties are changed together.
-      Controller --> Browser: Redirect to ThesisDetails(studentNumber)
-      Browser -> Controller: GET ThesisDetails(studentNumber)
-      Controller -> Students: Find updated student
-      Students --> Controller: Updated student
-      Controller -> Views: Render ThesisDetails(updated student)
-      Views --> Controller: HTML with actual date and Submitted status
-      Controller --> Browser: Return rendered page
-   end
-   Browser --> Admin: Display result
-end
-
-note over Students
-  Data is held in process memory and is not
-  persisted after the application stops.
-end note
-
-@enduml
+    Note over Students: Data is held in process memory and is not persisted after the application stops.
 ```
 
 ## W2-UC01: View Enrolment Details
