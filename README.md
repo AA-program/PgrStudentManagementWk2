@@ -187,3 +187,32 @@ dotnet test --logger "console;verbosity=detailed"
 dotnet run --project PgrStudentManagement.Web
 ```
 Once running, navigate to `https://localhost:<port>/Students` to interact with the student management system.
+
+
+
+
+
+--------------------------------------------
+W2-UC01 – View Enrolment Details
+- Displays enrolment details for an existing student.
+- Student Not Found handled.
+- Does not modify student data.
+
+W2-UC02 – View Thesis Details
+- Displays available thesis information.
+- Thesis Information Not Available handled.
+- Does not modify student data.
+
+W2-UC03 – Update Student Status
+- Updates the selected student's status.
+- Student Not Found handled.
+
+W2-UC04 – Update Expected Thesis Submission Date
+- Valid expected submission date updates the student.
+- Invalid date leaves the existing value unchanged.
+
+W2-UC05 – Record Actual Thesis Submission
+- Valid submission records the actual date.
+- Status changes to Submitted.
+- Invalid submission leaves both values unchanged.
+- Date + status update together, not separately.
